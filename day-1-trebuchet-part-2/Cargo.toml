@@ -1,0 +1,6 @@
+[package]
+name = "day-1-trebuchet-part-2"
+version = "0.0.1"
+authors = ["Chris Ferguson"]
+
+[dependencies]
