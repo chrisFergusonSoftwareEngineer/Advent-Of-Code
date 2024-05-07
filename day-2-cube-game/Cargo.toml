@@ -1,0 +1,6 @@
+[package]
+name = "day-2-cube-game"
+version = "0.0.1"
+authors = ["Chris Ferguson"]
+
+[dependencies]
