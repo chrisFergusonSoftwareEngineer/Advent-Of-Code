@@ -6,7 +6,9 @@ extern crate regex;
 use regex::Regex;
 
 fn main() {
-    let re = Regex::new(r"(XMAS|SMAX)").unwrap();
+    let re = Regex::new(r"(XMAS)").unwrap();
+    // This annoyed me for far too long.  But REGEX cannot do overlapping matches: "XMASAMX"  So I need to search twice, separately.
+    let backward = Regex::new(r"(SAMX)").unwrap();
     
     let mut total = 0;
 
@@ -17,9 +19,8 @@ fn main() {
         for line in lines {
             if let Ok(line_string) = line {
     
-                for (_, [_]) in re.captures_iter(&line_string).map(|c| c.extract()) {
-                    total += 1;
-                }
+                total += re.find_iter(&line_string).count();
+                total += backward.find_iter(&line_string).count();
 
                 full_input.push(line_string);
             }
@@ -29,24 +30,30 @@ fn main() {
     println!("Initial Total: {}", total);
     println!("Full Input Length: {}", full_input.len());
 
+    let mut up_finds = 0;
+    let mut up_left_finds = 0;
+    let mut up_right_finds = 0;
+    let mut down_finds = 0;
+    let mut down_left_finds = 0;
+    let mut down_right_finds = 0;
+
     for line_index in 0..full_input.len() {
         let line = &full_input[line_index];
-        println!("Line {} Length: {}", line_index, line.len());
+        println!("Line {} Length: {}: {}", line_index, line.len(), line);
         for char_index in 0..line.len() {
-            // println!("Char {} is {} of line {}", char_index, line.chars().nth(char_index).unwrap(), line);
             if line.chars().nth(char_index).unwrap() == 'X' {
                 if line_index >= 3 { //search UP
                     if (full_input[line_index-1].chars().nth(char_index).unwrap() == 'M') &&
                        (full_input[line_index-2].chars().nth(char_index).unwrap() == 'A') &&
                        (full_input[line_index-3].chars().nth(char_index).unwrap() == 'S') {
-                        total += 1; //vertical UP
+                        up_finds += 1; //vertical UP
                        }
                     
                     if char_index >= 3 { //diagonal up left
                         if (full_input[line_index-1].chars().nth(char_index-1).unwrap() == 'M') &&
                            (full_input[line_index-2].chars().nth(char_index-2).unwrap() == 'A') &&
                            (full_input[line_index-3].chars().nth(char_index-3).unwrap() == 'S') {
-                            total += 1; // UP - LEFT
+                            up_left_finds += 1; // UP - LEFT
                         }
                     }
 
@@ -54,7 +61,7 @@ fn main() {
                         if (full_input[line_index-1].chars().nth(char_index+1).unwrap() == 'M') &&
                            (full_input[line_index-2].chars().nth(char_index+2).unwrap() == 'A') &&
                            (full_input[line_index-3].chars().nth(char_index+3).unwrap() == 'S') {
-                            total += 1; // UP - RIGHT
+                            up_right_finds += 1; // UP - RIGHT
                         }
                     }
                 }
@@ -63,14 +70,14 @@ fn main() {
                     if (full_input[line_index+1].chars().nth(char_index).unwrap() == 'M') &&
                        (full_input[line_index+2].chars().nth(char_index).unwrap() == 'A') &&
                        (full_input[line_index+3].chars().nth(char_index).unwrap() == 'S') {
-                        total += 1; //vertical DOWN
+                        down_finds += 1; //vertical DOWN
                        }
                     
                     if char_index >= 3 { //diagonal down left
                         if (full_input[line_index+1].chars().nth(char_index-1).unwrap() == 'M') &&
                            (full_input[line_index+2].chars().nth(char_index-2).unwrap() == 'A') &&
                            (full_input[line_index+3].chars().nth(char_index-3).unwrap() == 'S') {
-                            total += 1; // DOWN - LEFT
+                            down_left_finds += 1; // DOWN - LEFT
                         }
                     }
 
@@ -78,7 +85,7 @@ fn main() {
                         if (full_input[line_index+1].chars().nth(char_index+1).unwrap() == 'M') &&
                            (full_input[line_index+2].chars().nth(char_index+2).unwrap() == 'A') &&
                            (full_input[line_index+3].chars().nth(char_index+3).unwrap() == 'S') {
-                            total += 1; // DOWN - RIGHT
+                            down_right_finds += 1; // DOWN - RIGHT
                         }
                     }
                 }
@@ -86,6 +93,14 @@ fn main() {
         }
     }
 
+    println!("Search Finds: UP: {}", up_finds);
+    println!("Search Finds: UP-LEFT: {}", up_left_finds);
+    println!("Search Finds: UP-RIGHT: {}", up_right_finds);
+    println!("Search Finds: DOWN: {}", down_finds);
+    println!("Search Finds: DOWN-LEFT: {}", down_left_finds);
+    println!("Search Finds: DOWN-RIGHT: {}", down_right_finds);
+    total += (up_finds + up_left_finds + up_right_finds + down_finds + down_left_finds + down_right_finds);
+    
     println!("{}", total);
 }
 
